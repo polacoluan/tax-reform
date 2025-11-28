@@ -49,7 +49,7 @@ export default function MoneyInput<TFieldValues extends FieldValues>({
     onChange: (value: unknown) => void
   ) {
     const digits = formattedValue.replace(/\D/g, "");
-    const realValue = digits ? Number(digits) / 100 : 0;
+    const realValue = digits ? Number(digits) / 100 : undefined;
     onChange(realValue);
   }
 
