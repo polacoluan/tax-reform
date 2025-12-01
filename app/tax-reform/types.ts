@@ -26,42 +26,55 @@ export type TaxReformPayload = {
   ibs_base_entry: number;
   ibs_aliquot_exit: number;
   ibs_base_exit: number;
+  // O backend pode aceitar campos adicionais (ex.: ISS); mantemos flexível
+  iss_aliquot_exit?: number;
+  iss_base_exit?: number;
+};
+
+export type TaxEntry = {
+  code: string;
+  label: string;
+  aliquot: number;
+  base: number;
+  credit: number;
+};
+
+export type TaxExit = {
+  code: string;
+  label: string;
+  aliquot: number;
+  base: number;
+  debit: number;
+  credit: number;
+  due: number;
 };
 
 export type TaxReformResult = {
-  inputs: {
-    segment: number;
-    invoicing: number;
-    costs: number;
-    activity: number;
+  inputs: Record<string, number>;
+  before: {
+    entries: TaxEntry[];
+    exits: TaxExit[];
+    total_due: number;
   };
-  parameters: {
-    t_atual: number;
-    t_IBS: number;
-    t_CBS: number;
-    red_setorial: number;
-    k_creditavel: number;
-    t_credito: number;
-    t_total_bruta: number;
-    t_total_efetiva_bruta: number;
-    custos_percent: number;
+  after: {
+    entries: TaxEntry[];
+    exits: TaxExit[];
+    totals: {
+      due: number;
+      reduction_percent: number;
+      due_with_reduction: number;
+    };
+    projected_rates: {
+      cbs_aliquot: number;
+      ibs_aliquot: number;
+      is_aliquot: number;
+      reduction_percent: number;
+    };
   };
-  antes: {
-    base: number;
-    imposto: number;
-    aliquota_efetiva: number;
-  };
-  depois: {
-    base: number;
-    imposto_bruto: number;
-    credito_insumos: number;
-    imposto_liquido: number;
-    aliquota_efetiva: number;
-  };
-  comparacao: {
-    dif_reais: number;
-    dif_pp: number;
-    classificacao:
+  comparison: {
+    difference: number;
+    difference_percent_points: number;
+    classification:
       | "aumento de carga"
       | "redução de carga"
       | "reducao de carga"

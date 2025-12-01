@@ -14,10 +14,12 @@ import { FieldPath, FieldValues, UseFormReturn } from "react-hook-form";
 type TaxCardProps<FormValues extends FieldValues> = {
   title: string;
   form: UseFormReturn<FormValues>;
-  entryAliquot: keyof FormValues;
+  entryAliquot?: keyof FormValues;
   entryBase: keyof FormValues;
-  exitAliquot: keyof FormValues;
+  exitAliquot?: keyof FormValues;
   exitBase: keyof FormValues;
+  entryFixedAliquot?: number;
+  exitFixedAliquot?: number;
 };
 
 function TaxSubSection<FormValues extends FieldValues>({
@@ -26,12 +28,14 @@ function TaxSubSection<FormValues extends FieldValues>({
   aliquotName,
   baseName,
   tone,
+  fixedAliquot,
 }: {
   form: UseFormReturn<FormValues>;
   title: string;
-  aliquotName: keyof FormValues;
+  aliquotName?: keyof FormValues;
   baseName: keyof FormValues;
   tone: "entry" | "exit";
+  fixedAliquot?: number;
 }) {
   const badgeStyles =
     tone === "entry"
@@ -51,36 +55,53 @@ function TaxSubSection<FormValues extends FieldValues>({
         </p>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <FormField
-          control={form.control}
-          name={aliquotName as FieldPath<FormValues>}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-slate-900">
-                Alíquota (%)
-              </FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={
-                    field.value === undefined || field.value === null
-                      ? ""
-                      : field.value
-                  }
-                  onChange={(ev) =>
-                    field.onChange(
-                      ev.target.value === "" ? undefined : Number(ev.target.value)
-                    )
-                  }
-                  placeholder="0,00"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {typeof fixedAliquot === "number" ? (
+          <div className="flex flex-col gap-1">
+            <FormLabel className="text-slate-900">Alíquota (%)</FormLabel>
+            <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700">
+              {fixedAliquot.toLocaleString("pt-BR", {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 2,
+              })}{" "}
+              %
+            </div>
+          </div>
+        ) : aliquotName ? (
+          <FormField
+            control={form.control}
+            name={aliquotName as FieldPath<FormValues>}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-slate-900">
+                  Alíquota (%)
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={
+                      field.value === undefined || field.value === null
+                        ? ""
+                        : field.value
+                    }
+                    onChange={(ev) =>
+                      field.onChange(
+                        ev.target.value === ""
+                          ? undefined
+                          : Number(ev.target.value)
+                      )
+                    }
+                    placeholder="0,00"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ) : (
+          <div />
+        )}
         <MoneyInput<FormValues>
           form={form}
           name={baseName as FieldPath<FormValues>}
@@ -99,6 +120,8 @@ export default function TaxCard<FormValues extends FieldValues>({
   entryBase,
   exitAliquot,
   exitBase,
+  entryFixedAliquot,
+  exitFixedAliquot,
 }: TaxCardProps<FormValues>) {
   return (
     <section className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-4 shadow-sm">
@@ -117,6 +140,7 @@ export default function TaxCard<FormValues extends FieldValues>({
           title="Entradas"
           aliquotName={entryAliquot}
           baseName={entryBase}
+          fixedAliquot={entryFixedAliquot}
           tone="entry"
         />
         <TaxSubSection<FormValues>
@@ -124,6 +148,7 @@ export default function TaxCard<FormValues extends FieldValues>({
           title="Saídas"
           aliquotName={exitAliquot}
           baseName={exitBase}
+          fixedAliquot={exitFixedAliquot}
           tone="exit"
         />
       </div>
